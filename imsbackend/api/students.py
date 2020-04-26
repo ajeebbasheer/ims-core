@@ -196,7 +196,7 @@ def get_by_id_or_code():
 
 @bp.route('/addstudent', methods=['POST'])
 @cross_origin()
-def add_batch():
+def add_student():
     """
     REST API to get an entry.
     """
@@ -275,6 +275,12 @@ def add_batch():
     branch = service.find_one(Globals.BRANCH, {'_id': branch_id})
     batch = service.find_one(Globals.BATCH, {'_id': batch_id})
 
+    student_count = service.count_items(Globals.STUDENT, {"branchId": branch_id, "batchId": batch_id})
+
+    LOGGER.debug(f"student_count:{student_count}")
+
+    student_id = f"ICA{branch.get('code')}{batch.get('code')}{int(student_count) + 1:03d}"
+
     batch_fee = batch.get("fee")
 
     LOGGER.info(f"BRANCH DETAILS: {branch}")
@@ -283,6 +289,7 @@ def add_batch():
     data_dict = {
                  "firstName": fname,
                  "lastName": lname,
+                 "studentId": student_id,
                  "branchId": branch_id,
                  "batchId": batch_id,
                  "batch": batch,

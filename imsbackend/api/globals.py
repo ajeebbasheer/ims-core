@@ -27,6 +27,7 @@ class Status:
 class Globals:
     TYPE = "incomeExpenseType"
     INCOME = "income"
+    EXPENSE = "expense"
     STUDENT = "students"
     FACULTY = "faculties"
     SUBJECT = "subjects"

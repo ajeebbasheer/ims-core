@@ -15,12 +15,12 @@ bp = Blueprint('accounts', __name__, url_prefix='/api/accounts')
 
 @bp.route('/gettypes', methods=['POST'])
 @cross_origin()
-def get_by_id_or_code():
+def get_types():
     """
     REST API to get an entry.
     """
 
-    __api_code = "002"
+    __api_code = "001"
     response = None
     json_req_data = None
 
@@ -112,7 +112,7 @@ def add_type():
     REST API to get an entry.
     """
 
-    __api_code = "003"
+    __api_code = "002"
     response = None
     json_req_data = None
 
@@ -181,6 +181,236 @@ def add_type():
     }
 
     result = service.insert_one(Globals.TYPE, data_dict)
+
+    if not result:
+        LOGGER.error("Insert failed")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_200,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4000),
+                                      Status.ERROR_4000_VALUE,
+                                      {"status": "Unable to insert to MongoDB"})
+        return response
+
+    if not result.get('inserted_id'):
+        LOGGER.error("Inserted id not returned")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_500,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4000),
+                                      Status.ERROR_4000_VALUE,
+                                      {"status": "inserted_id not returned"})
+        return response
+
+    data_dict['_id'] = result.get('inserted_id')
+
+    response = response_generator(Globals.STATUS_OK, HttpStatus.HTTP_200,
+                                  (SERVICE_CODE + __api_code +
+                                   Status.SUCCESS_1000),
+                                  Status.SUCCESS_1000_VALUE,
+                                  {"status": "Insert Successful",
+                                   "data": data_dict})
+
+    return response
+
+
+@bp.route('/addincome', methods=['POST'])
+@cross_origin()
+def add_income():
+    """
+    REST API to get an entry.
+    """
+
+    __api_code = "003"
+    response = None
+    json_req_data = None
+
+    source_ip = request.remote_addr
+
+    LOGGER.debug("Received a request from source_ip = " + str(source_ip) +
+                 ", type(source_ip) = " + str(type(source_ip)))
+
+    request_size = request.content_length
+
+    if request_size > Globals.MAX_UPLOAD_SIZE:
+        LOGGER.error(f"Request bigger than max size {Globals.MAX_UPLOAD_SIZE}")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_404,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4002),
+                                      Status.ERROR_4002_VALUE,
+                                      {"status": "Maximum size reached", "input size": request_size})
+        return response
+
+    try:
+        json_req_data = request.get_json()
+    except Exception as excp:
+        LOGGER.error(f"Bad request: {excp}")
+        json_req_data = None
+
+    if not json_req_data:
+        LOGGER.error("No JSON input data provided")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_404,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4004),
+                                      Status.ERROR_4004_VALUE,
+                                      {"status": "Server could not understand the request"})
+        return response
+
+    LOGGER.debug(f"input json: {json_req_data}")
+
+    branch_id = json_req_data.get("branch")
+    batch_id = json_req_data.get("batch")
+    student_id = json_req_data.get("student")
+    amount = json_req_data.get("amount")
+    comment = json_req_data.get("desc")
+    date = json_req_data.get("desc")
+    inc_type = json_req_data.get("incomeType")
+
+    if (not inc_type) or (not amount) or (not date) :
+        LOGGER.error("Input value missing")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_401, SERVICE_CODE +
+                                      __api_code + Status.ERROR_4001,
+                                      Status.Status.ERROR_4001_VALUE,
+                                      {"status": Status.Status.ERROR_4001_VALUE})
+        return response
+
+    service = Service()
+
+    if not service.db_client:
+        LOGGER.error(f"Unable to do get mongo client")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_500,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4000),
+                                      Status.ERROR_4000_VALUE,
+                                      {"status": "Unable to connect MongoDB"})
+        return response
+
+    LOGGER.info(f"Connected to mongo: {service.db_client}")
+
+    data_dict = {
+                 "incomeType": inc_type,
+                 "amount": amount,
+                 "date": date,
+                 "branchId": branch_id,
+                 "batchId": batch_id,
+                 "studentId": student_id,
+                 "comment": comment
+    }
+
+    result = service.insert_one(Globals.INCOME, data_dict)
+
+    if not result:
+        LOGGER.error("Insert failed")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_200,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4000),
+                                      Status.ERROR_4000_VALUE,
+                                      {"status": "Unable to insert to MongoDB"})
+        return response
+
+    if not result.get('inserted_id'):
+        LOGGER.error("Inserted id not returned")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_500,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4000),
+                                      Status.ERROR_4000_VALUE,
+                                      {"status": "inserted_id not returned"})
+        return response
+
+    data_dict['_id'] = result.get('inserted_id')
+
+    response = response_generator(Globals.STATUS_OK, HttpStatus.HTTP_200,
+                                  (SERVICE_CODE + __api_code +
+                                   Status.SUCCESS_1000),
+                                  Status.SUCCESS_1000_VALUE,
+                                  {"status": "Insert Successful",
+                                   "data": data_dict})
+
+    return response
+
+
+@bp.route('/addexpense', methods=['POST'])
+@cross_origin()
+def add_expense():
+    """
+    REST API to get an entry.
+    """
+
+    __api_code = "004"
+    response = None
+    json_req_data = None
+
+    source_ip = request.remote_addr
+
+    LOGGER.debug("Received a request from source_ip = " + str(source_ip) +
+                 ", type(source_ip) = " + str(type(source_ip)))
+
+    request_size = request.content_length
+
+    if request_size > Globals.MAX_UPLOAD_SIZE:
+        LOGGER.error(f"Request bigger than max size {Globals.MAX_UPLOAD_SIZE}")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_404,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4002),
+                                      Status.ERROR_4002_VALUE,
+                                      {"status": "Maximum size reached", "input size": request_size})
+        return response
+
+    try:
+        json_req_data = request.get_json()
+    except Exception as excp:
+        LOGGER.error(f"Bad request: {excp}")
+        json_req_data = None
+
+    if not json_req_data:
+        LOGGER.error("No JSON input data provided")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_404,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4004),
+                                      Status.ERROR_4004_VALUE,
+                                      {"status": "Server could not understand the request"})
+        return response
+
+    LOGGER.debug(f"input json: {json_req_data}")
+
+    branch_id = json_req_data.get("branch")
+    batch_id = json_req_data.get("batch")
+    student_id = json_req_data.get("student")
+    amount = json_req_data.get("amount")
+    comment = json_req_data.get("desc")
+    date = json_req_data.get("desc")
+    exp_type = json_req_data.get("expenseType")
+
+    if (not exp_type) or (not amount) or (not date) :
+        LOGGER.error("Input value missing")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_401, SERVICE_CODE +
+                                      __api_code + Status.ERROR_4001,
+                                      Status.Status.ERROR_4001_VALUE,
+                                      {"status": Status.Status.ERROR_4001_VALUE})
+        return response
+
+    service = Service()
+
+    if not service.db_client:
+        LOGGER.error(f"Unable to do get mongo client")
+        response = response_generator(Globals.STATUS_KO, HttpStatus.HTTP_500,
+                                      (SERVICE_CODE + __api_code +
+                                       Status.ERROR_4000),
+                                      Status.ERROR_4000_VALUE,
+                                      {"status": "Unable to connect MongoDB"})
+        return response
+
+    LOGGER.info(f"Connected to mongo: {service.db_client}")
+
+    data_dict = {
+                 "expenseType": exp_type,
+                 "amount": amount,
+                 "date": date,
+                 "branchId": branch_id,
+                 "batchId": batch_id,
+                 "studentId": student_id,
+                 "comment": comment
+    }
+
+    result = service.insert_one(Globals.EXPENSE, data_dict)
 
     if not result:
         LOGGER.error("Insert failed")

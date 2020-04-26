@@ -27,6 +27,9 @@ class Service(object):
     def upsert_one(self, col, identifier, new_values):
         return self.db_client.upsert_one(col, identifier, new_values)
 
+    def count_items(self, collection, selector):
+        return self.db_client.count_items(collection, selector)
+
     def close(self):
         return self.db_client.close()
 

@@ -218,3 +218,20 @@ class MongodbRepository(object):
         LOGGER.debug(f"RESULT: UPSERT_ONE => {result}")
 
         return result
+
+    def count_items(self, collection_name, identifier):
+        try:
+
+            LOGGER.debug(f"collection_name = {collection_name} "
+                         f"identifier = {identifier} ")
+
+            collection = self.db_client[collection_name]
+
+            mongodb_result = collection.count_documents(identifier)
+
+        except Exception as excp:
+            LOGGER.error(f"exception in find_one: {excp}")
+            return None
+
+        LOGGER.debug(f"RESULT: COUNT_ITEMS => {mongodb_result}")
+        return mongodb_result

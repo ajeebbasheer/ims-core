@@ -1,3 +1,10 @@
+*.pyc
+*.pyman
+*.pyo
+__pycache__
+.deps
+.libs
+/_build/
 .Python
 [Bb]in
 [Ii]nclude
@@ -7,4 +14,4 @@
 [Ss]cripts
 pyvenv.cfg
 .venv
-
+__pycache__/*

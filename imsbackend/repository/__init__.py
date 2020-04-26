@@ -21,5 +21,9 @@ class Repository(object):
     def upsert_one(self, col, identifier, new_values):
         return self.client.upsert_one(col, identifier, new_values)
 
+    def count_items(self, col, identifier):
+        result = self.client.count_items(col, identifier)
+        return result
+
     def close(self):
         return self.client.close()
